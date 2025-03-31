@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
@@ -31,6 +32,7 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.example.extendedtodo.ui.theme.ExtendedToDoTheme
 
 class MainActivity : ComponentActivity() {
@@ -46,7 +48,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ToDoItem(task: String, onRemove: () -> Unit) {
+fun ToDoItem(task: String, onRemove: () -> Unit, onShowDialog: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -56,7 +58,8 @@ fun ToDoItem(task: String, onRemove: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = task, style = MaterialTheme.typography.titleLarge)
+            Text(text = task)
+            Button(onClick = onShowDialog ) { Text("Edit") }
             Button(onClick = onRemove) { Text("Remove") }
         }
     }
@@ -64,11 +67,17 @@ fun ToDoItem(task: String, onRemove: () -> Unit) {
 @Composable
 fun ToDoScreen(
     currentToDo: String,
+    currentEdit: String,
     toDoList: List<String>,
     onToDoChange: (String) -> Unit,
+    onEditChange: (String) -> Unit,
     onAddToDo: () -> Unit,
-    onRemoveToDo: (String) -> Unit
+    onEditToDo: (String) -> Unit,
+    onRemoveToDo: (String) -> Unit,
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    var editValue by remember { mutableStateOf("") }
+
     Column (
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Top,
@@ -91,11 +100,47 @@ fun ToDoScreen(
                 defaultKeyboardAction(ImeAction.Done)
             })
         )
-        Button(onClick = onAddToDo){Text("Add Task")}
+        Button(modifier = Modifier.fillMaxWidth(), onClick = onAddToDo){Text("Add Task")}
         LazyColumn {
             items(toDoList) {
-                    task -> ToDoItem(task = task, onRemove = { onRemoveToDo(task) })
+                    task -> ToDoItem(
+                        task = task,
+                        onRemove = { onRemoveToDo(task) },
+                        onShowDialog = {
+                            showDialog = true
+                            editValue = task
+                        }
+                    )
             }
+        }
+        if (showDialog) {
+            AlertDialog(
+                onDismissRequest = { showDialog = false },
+                title = { Text("Edit Task") },
+                text = {
+                    Column {
+                        Text("Previous name: $editValue")
+                        OutlinedTextField(
+                            value = currentEdit,
+                            onValueChange = onEditChange,
+                            label = { Text("Task Name") }
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = {
+                        onEditToDo(editValue)
+                        showDialog = false
+                    }) {
+                        Text("Save")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showDialog = false }) {
+                        Text("Cancel")
+                    }
+                }
+            )
         }
     }
 }
@@ -103,19 +148,28 @@ fun ToDoScreen(
 fun ToDoApp() {
     var currentToDo by remember { mutableStateOf("") }
     val toDoList = remember { mutableStateListOf<String>() }
+    var currentEdit by remember { mutableStateOf("") }
 
     ToDoScreen(
         currentToDo = currentToDo,
+        currentEdit = currentEdit,
         toDoList = toDoList,
         onToDoChange = {currentToDo = it},
+        onEditChange = {currentEdit = it},
         onAddToDo = {
             if (currentToDo.isNotBlank()) {
                 toDoList.add(currentToDo)
                 currentToDo = ""
-                println(toDoList)
             }
         },
-        onRemoveToDo = {toDo -> toDoList.remove(toDo)}
+        onEditToDo = {toDo ->
+            if (currentEdit.isNotBlank()) {
+                val index = toDoList.indexOf(toDo)
+                toDoList[index] = currentEdit
+                currentEdit = ""
+            }
+        },
+        onRemoveToDo = {toDo -> toDoList.remove(toDo)},
     )
 }
 
@@ -125,10 +179,13 @@ fun AppPreview() {
     ExtendedToDoTheme {
         ToDoScreen(
             currentToDo = "",
+            currentEdit = "",
             toDoList = listOf("Be great", "Handle it", "Keep going"),
             onToDoChange = {},
+            onEditChange = {},
             onAddToDo = {},
-            onRemoveToDo = {}
+            onEditToDo = {},
+            onRemoveToDo = {},
         )
     }
 }
