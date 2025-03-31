@@ -2,7 +2,6 @@ package com.example.extendedtodo
 
 import android.graphics.Outline
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,7 +11,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,7 +19,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.ui.platform.LocalContext
@@ -48,17 +46,39 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun NewElementForm(
-    currentToDo: String,
-    onToDoChange: (String) -> Unit,
-    onAddToDo: () -> Unit
-) {
-    Column(
+fun ToDoItem(task: String, onRemove: () -> Unit) {
+    Card(
         modifier = Modifier
-            .fillMaxSize()
-            .padding(14.dp),
+            .fillMaxWidth()
+            .padding(vertical = 5.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(text = task, style = MaterialTheme.typography.titleLarge)
+            Button(onClick = onRemove) { Text("Remove") }
+        }
+    }
+}
+@Composable
+fun ToDoScreen(
+    currentToDo: String,
+    toDoList: List<String>,
+    onToDoChange: (String) -> Unit,
+    onAddToDo: () -> Unit,
+    onRemoveToDo: (String) -> Unit
+) {
+    Column (
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = "Extended To-Do List",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(vertical = 10.dp)
+        )
         OutlinedTextField(
             value = currentToDo,
             onValueChange = onToDoChange,
@@ -72,68 +92,43 @@ fun NewElementForm(
             })
         )
         Button(onClick = onAddToDo){Text("Add Task")}
-    }
-}
-@Composable
-fun ToDoItem(task: String, onRemove: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 5.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = task)
-            Button(onClick = onRemove) { Text("Remove") }
-        }
-    }
-}
-@Composable
-fun ToDoList(toDoList: List<String>, onRemoveToDo: (String) -> Unit) {
-    LazyColumn {
-        items(toDoList) {
-            task -> ToDoItem(task = task, onRemove = { onRemoveToDo(task) })
+        LazyColumn {
+            items(toDoList) {
+                    task -> ToDoItem(task = task, onRemove = { onRemoveToDo(task) })
+            }
         }
     }
 }
 @Composable
 fun ToDoApp() {
     var currentToDo by remember { mutableStateOf("") }
-    var toDoList = remember { mutableStateListOf<String>() }
+    val toDoList = remember { mutableStateListOf<String>() }
 
-    Column (
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Top,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Spacer(modifier = Modifier.heightIn(8.dp))
-        Text(
-            text = "Extended ToDo List",
-            style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(vertical = 10.dp)
-            )
-        NewElementForm(
-            currentToDo = currentToDo,
-            onToDoChange = {currentToDo = it},
-            onAddToDo = {
-                if (currentToDo.isNotBlank()) {
-                    Log.d("ToDoApp", "Adding task: $currentToDo")
-                    toDoList.add(currentToDo)
-                    currentToDo = ""
-                }
+    ToDoScreen(
+        currentToDo = currentToDo,
+        toDoList = toDoList,
+        onToDoChange = {currentToDo = it},
+        onAddToDo = {
+            if (currentToDo.isNotBlank()) {
+                toDoList.add(currentToDo)
+                currentToDo = ""
+                println(toDoList)
             }
-        )
-        ToDoList(
-            toDoList = toDoList,
-            onRemoveToDo = {toDo -> toDoList.remove(toDo)}
-        )
-    }
+        },
+        onRemoveToDo = {toDo -> toDoList.remove(toDo)}
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun AppPreview() {
-    ToDoApp()
+    ExtendedToDoTheme {
+        ToDoScreen(
+            currentToDo = "",
+            toDoList = listOf("Be great", "Handle it", "Keep going"),
+            onToDoChange = {},
+            onAddToDo = {},
+            onRemoveToDo = {}
+        )
+    }
 }
