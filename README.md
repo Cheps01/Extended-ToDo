@@ -23,7 +23,7 @@
 3. In the **Version Control** dropdown, select **Git**.
 4. Paste the repository URL:
    ```
-   https://github.com/yourusername/your-repository.git
+   https://github.com/Cheps01/Extended-ToDo.git
    ```
 5. Click **Clone**.
 6. Android Studio will open the project automatically.
