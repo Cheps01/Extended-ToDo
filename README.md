@@ -1,3 +1,9 @@
+# Video Demo
+Check out the app in this demonstration.
+```
+https://drive.google.com/file/d/1IpVRhdr2hhdj69zwkHsHRu-UKjxaMawI/view?usp=sharing
+```
+
 # Usage examples
 ### Adding a Task
 1. Open the app.
