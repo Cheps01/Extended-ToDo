@@ -1,8 +1,5 @@
 # Video Demo
-Check out the app in this demonstration.
-```
-https://drive.google.com/file/d/1IpVRhdr2hhdj69zwkHsHRu-UKjxaMawI/view?usp=sharing
-```
+Check out the app in this demonstration: https://drive.google.com/file/d/1GAVOAOPh7md19S6i0-mTQXIxQQ5Xloj7/view?usp=sharing
 
 # Usage examples
 ### Adding a Task
